@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-ipa: "Noto Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-cream-50: #fff9f0;
+  --color-cream-100: #fff3e2;
+  --color-cream-200: #fbe8cd;
+  --color-ink-900: #1c1917;
+  --color-ink-700: #44403c;
+  --color-ink-500: #78716c;
+  --color-coral-400: #ff7a59;
+  --color-coral-500: #f9562e;
+  --color-coral-600: #e0441f;
+  --color-mint-300: #7fe3c3;
+  --color-mint-400: #3dd6a4;
+  --color-mint-500: #14b983;
+  --color-amber-pop: #ffb020;
+
+  --radius-2xl: 1.25rem;
+  --shadow-soft: 0 8px 30px rgb(28 25 23 / 0.08);
+  --shadow-card: 0 12px 40px rgb(28 25 23 / 0.12);
+}
+
+:root {
+  --bg: var(--color-cream-50);
+  --fg: var(--color-ink-900);
+}
+
+.dark {
+  --bg: #171412;
+  --fg: #fff7ed;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--color-amber-pop);
+  color: #1c1917;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-coral-500);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.card-3d {
+  perspective: 1200px;
+}
+.card-3d-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.3, 1.2);
+}
+.card-3d.flipped .card-3d-inner {
+  transform: rotateY(180deg);
+}
+.card-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.card-back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-3d-inner {
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

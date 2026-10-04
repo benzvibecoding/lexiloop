@@ -1,0 +1,18 @@
+# Quyết định kỹ thuật (DECISIONS)
+
+- 2026-10-04 — Phase 0: dùng `pnpm dlx create-next-app` (Next 16.3.8, React 19, Tailwind v4) vì đúng stack yêu cầu, zero config cho Vercel.
+- Phase 0: i18n tự viết (dictionary vi/en + zustand persist) thay vì next-intl để local-first, không routing theo locale, nhẹ, offline tốt.
+- Phase 0: theme bằng `next-themes` (class), tokens kem/coral/mint trong `@theme` của Tailwind v4.
+- Phase 0: PWA dùng `app/manifest.ts` + `public/sw.js` viết tay tối giản. Serwist để Phase 7 khi kiểm tra tương thích Next 16.
+- Phase 0: manifest chỉ dùng `icon.svg`; script sinh PNG 192/512 + maskable để Phase 7.
+- Phase 0: test dùng Vitest + jsdom (chưa thêm Playwright/axe — Phase 8).
+- Giả định: tên app đổi ở `src/config/site.ts`; deploy Vercel không cần env.
+- 2026-10-04 — Phase 1: Dexie v1 (`lexiloop`), id = nanoid, timestamp ms, soft-delete `deletedAt`. Media lưu `Uint8Array|Blob` để test được bằng fake-indexeddb. Backup JSON có `schemaVersion: 1`, validate Zod, chống CSV injection khi xuất CSV.
+- 2026-10-04 — Phase 2: form Zod + react-hook-form; auto-fill Free Dictionary + gợi ý VI MyMemory (lỗi → nhập tay); bulk 2 song song + hủy; import CSV/TSV/JSON/Quizlet + preview + bỏ trùng; list ảo hóa TanStack; toast Undo.
+- 2026-10-04 — Phase 3: FSRS qua `ts-fsrs` v5 (adapter + preview due + queue learning→review→new + leech theo lapses); focus-mode flashcard (lật 3D, swipe, phím Space/1-4/Z/S/E/R), undo/suspend/bury/sửa trong lúc học, TTS speechSynthesis + audio fallback, tổng kết + ôn lại thẻ sai + confetti.
+- 2026-10-04 — Phase 4: 9 chế độ (`learn/typing/listening/quiz/matching/cloze/pronunciation/sprint` + custom) qua `?mode=`, chung helper `gradeCardInDb` nên mọi chế độ đều ghi ReviewLog; cram chỉ ghi log không đổi lịch; phát âm feature-detect + cảnh báo gửi audio; matching lưu kỷ lục localStorage; quiz nhiễu theo pos/CEFR/tag.
+- 2026-10-04 — Phase 5: dashboard thật (đến hạn/mới, vòng mục tiêu = newPerDay+10, streak + freeze, Từ của ngày, tiếp tục deck gần nhất); stats (heatmap 365, true retention, phân bố new/learning/young/mature, dự báo 30n, lọc deck/tag/CEFR/range; recharts dynamic); gamification (20 huy hiệu, quest ngày, XP/level, freeze tự dùng + thưởng mỗi 7 ngày, tắt được); streak cập nhật trong mọi lần chấm.
+- 2026-10-04 — Phase 6: 12 deck mẫu / 408 thẻ tự biên (JSON + Zod validate trong test), clone 1 chạm không ghi đè tiến độ; onboarding 3 bước bỏ qua được + tạo deck gợi ý theo goal/level/số từ; placement 20 câu ước lượng CEFR (band cao nhất ≥3/4).
+- 2026-10-04 — Phase 7: landing đầy đủ (đồ thị đường quên SVG, modes, FAQ + JSON-LD WebApplication/FAQPage, skip link); PWA hoàn chỉnh (icon PNG 192/512 + maskable do `pnpm icons` sinh từ SVG, SW precache shell + offline fallback + SWR từ điển/audio); study modes dynamic import; test tương phản AA + SEO/PWA; nút chấm đậm hơn (600) cho dễ đọc. Lighthouse/axe chạy tay theo README (mục tiêu ≥90).
+- 2026-10-04 — Phase 8: E2E Playwright smoke 5 test (console-error assertion) bắt được bug production: `loadSettings` ghi trong `useLiveQuery` → crash dashboard/review/stats khi DB trống. Fix bằng `peekSettings` (chỉ đọc) + `useInitSettings` (ghi trong effect) + test hồi quy. Không còn TODO; DoD đạt trừ Lighthouse/axe chạy tay.
+- 2026-10-04 — Phase 9: sync Supabase (schema + RLS theo user, adapter `SyncAdapter`, last-write-wins, logs append-only, auto-sync khi mở app/có mạng, ẩn hẳn khi thiếu env); AI Assist BYOK (Gemini free/OpenAI-compatible, key local, tắt mặc định, nút AI trong form + ô mnemonic mới); share deck link nén lz-string (validate Zod, tối đa 500 thẻ, trang `/share` preview + thêm 1 chạm).

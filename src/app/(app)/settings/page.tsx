@@ -92,6 +92,17 @@ export default function SettingsPage() {
             </select>
           </label>
           <label className="text-sm font-medium">
+            Mục tiêu ôn / ngày
+            <input
+              type="number"
+              min={1}
+              max={500}
+              value={settings.dailyGoalReviews}
+              onChange={(e) => void patch({ dailyGoalReviews: Number(e.target.value) })}
+              className="mt-1 block min-h-[44px] w-full rounded-xl border border-stone-300 px-3 dark:border-stone-700 dark:bg-stone-950"
+            />
+          </label>
+          <label className="text-sm font-medium">
             Giờ đổi ngày (0–23)
             <input
               type="number"

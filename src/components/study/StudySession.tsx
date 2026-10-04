@@ -10,6 +10,7 @@ import { gradeFsrs, previewDue } from "@/lib/srs/adapter";
 import { buildQueue, type QueueItem } from "@/lib/srs/queue";
 import { dayKey, dayStartMs } from "@/lib/clock/clock";
 import { updateStreak } from "@/lib/gamification/streak";
+import { trackOncePerDay } from "@/lib/analytics";
 import { speak, stopSpeak } from "@/lib/tts/speak";
 import { Flashcard } from "@/components/study/Flashcard";
 import { GradeButtons } from "@/components/study/GradeButtons";
@@ -169,6 +170,7 @@ export function StudySession({ deckId, cram = false }: { deckId: string | null; 
       if (streak !== settings.streak) await saveSettings(db, { streak });
     }
     setHistory((h) => [...h, { cardSnapshot: prev, logId: log.id, xpGained: gained, wasNew, wasCorrect: isCorrect }]);
+    trackOncePerDay("review_day");
     setCorrect((c) => c + (isCorrect ? 1 : 0));
     setNewCount((c) => c + (wasNew ? 1 : 0));
     setXp((x) => x + gained);

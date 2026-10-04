@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { Cloud, CloudOff, RefreshCw } from "lucide-react";
 import { isSyncConfigured, syncAdapter } from "@/lib/sync/supabase";
+import { getDb } from "@/lib/db/client";
+import { loadSettings, saveSettings } from "@/lib/db/repositories";
+import { track } from "@/lib/analytics";
 
 function lastSync(): number | null {
   try {
@@ -26,7 +29,17 @@ export function SyncPanel() {
     void syncAdapter.getUserId().then(setUserId);
     return syncAdapter.onAuthChange((id) => {
       setUserId(id);
-      if (id) void syncAdapter.syncNow().then((r) => setAt(r.at)).catch(() => undefined);
+      if (id) {
+        try {
+          if (!localStorage.getItem("lexiloop-tracked-signup")) {
+            localStorage.setItem("lexiloop-tracked-signup", "1");
+            track("signup");
+          }
+        } catch {
+          // bỏ qua
+        }
+        void syncAdapter.syncNow().then((r) => setAt(r.at)).catch(() => undefined);
+      }
     });
   }, []);
 
@@ -54,7 +67,7 @@ export function SyncPanel() {
       </h2>
       {!userId ? (
         <div className="mt-3">
-          <p className="text-sm text-stone-500">Đăng nhập để sync giữa các máy. Không đăng nhập app vẫn chạy bình thường.</p>
+          <p className="text-sm text-stone-500">Đăng nhập để giữ chuỗi + XP khi đổi máy, thi đua bảng xếp hạng. Không đăng nhập app vẫn học bình thường.</p>
           <div className="mt-2 flex gap-2">
             <input
               value={email}
@@ -83,6 +96,7 @@ export function SyncPanel() {
       ) : (
         <div className="mt-3">
           <p className="text-sm text-stone-500">Đã đăng nhập · sync gần nhất: {at ? new Date(at).toLocaleString("vi-VN") : "chưa"}</p>
+          <BoardOptIn />
           <div className="mt-2 flex gap-2">
             <button
               type="button"
@@ -105,6 +119,56 @@ export function SyncPanel() {
       )}
       {msg ? <p role="status" className="mt-2 text-sm font-medium">{msg}</p> : null}
     </section>
+  );
+}
+
+/** Tên hiển thị + tham gia bảng xếp hạng (chỉ member). */
+function BoardOptIn() {
+  const [name, setName] = useState("");
+  const [optIn, setOptIn] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    void getDb()
+      .settings.get("main")
+      .then((s) => {
+        if (s) {
+          setName(s.displayName ?? "");
+          setOptIn(s.boardOptIn ?? false);
+        }
+      })
+      .catch(() => undefined);
+  }, []);
+
+  async function save(): Promise<void> {
+    const db = getDb();
+    const cur = await loadSettings(db);
+    await saveSettings(db, { ...cur, displayName: name.trim().slice(0, 60) || undefined, boardOptIn: optIn });
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2500);
+  }
+
+  return (
+    <div className="mt-2 rounded-2xl bg-stone-100 p-3 dark:bg-stone-800">
+      <label className="flex items-center gap-2 text-sm font-bold">
+        <input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} className="size-5" />
+        Hiện tên tôi trên bảng xếp hạng
+      </label>
+      <div className="mt-2 flex gap-2">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Tên hiển thị (VD: Minh)"
+          aria-label="Tên hiển thị"
+          maxLength={60}
+          className="min-h-[44px] flex-1 rounded-xl border border-stone-300 px-3 dark:border-stone-700 dark:bg-stone-950"
+        />
+        <button type="button" onClick={() => void save()} className="min-h-[44px] rounded-xl bg-stone-900 px-4 text-sm font-bold text-white dark:bg-white dark:text-stone-900">
+          Lưu
+        </button>
+      </div>
+      {saved ? <p role="status" className="mt-1 text-xs">Đã lưu — sync lần tới sẽ cập nhật bảng.</p> : null}
+    </div>
   );
 }
 

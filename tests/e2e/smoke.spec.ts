@@ -56,6 +56,16 @@ test("library add -> decks -> review -> study one card", async ({ page }) => {
   await expect(page.getByText(/\/ \d+|hết thẻ|tổng kết/i).first()).toBeVisible();
 });
 
+test("leaderboard guest sees member prompt", async ({ page }) => {
+  await page.goto("/leaderboard");
+  await expect(page.getByRole("heading", { name: /xếp hạng|dành cho thành viên/i })).toBeVisible();
+});
+
+test("admin guest sees locked page", async ({ page }) => {
+  await page.goto("/admin");
+  await expect(page.getByRole("heading", { name: /quản trị|khu vực quản trị/i })).toBeVisible();
+});
+
 test("mobile viewport has bottom tabs", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto("/dashboard");

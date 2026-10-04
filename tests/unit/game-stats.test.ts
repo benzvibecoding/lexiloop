@@ -46,7 +46,7 @@ describe("badges", () => {
   it("has ~20 badges and evaluates", () => {
     expect(BADGES.length).toBeGreaterThanOrEqual(18);
     const ids = evaluateBadges({
-      settings: { id: "main", onboardingDone: true, newPerDay: 10, reviewPerDay: 200, desiredRetention: 0.9, learningStepsMin: [1, 10], relearningStepsMin: [10], dayRolloverHour: 4, leechThreshold: 8, ttsRate: 1, ttsAutoplay: true, defaultMode: "flashcard", frontSide: "word", xp: 150, level: 1, streak: { current: 7, best: 7, freezes: 0, lastStudyDate: null }, updatedAt: 0 },
+      settings: { id: "main", onboardingDone: true, newPerDay: 10, reviewPerDay: 200, dailyGoalReviews: 20, desiredRetention: 0.9, learningStepsMin: [1, 10], relearningStepsMin: [10], dayRolloverHour: 4, leechThreshold: 8, ttsRate: 1, ttsAutoplay: true, defaultMode: "flashcard", frontSide: "word", boardOptIn: false, xp: 150, level: 1, streak: { current: 7, best: 7, freezes: 0, lastStudyDate: null }, updatedAt: 0 },
       stats: [{ date: "2026-10-04", reviews: 60, newCards: 5, correct: 60, timeMs: 1, xp: 60 }],
       logs: [],
       totalReviews: 120,

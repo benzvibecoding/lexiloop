@@ -172,6 +172,18 @@ class SupabaseSync implements SyncAdapter {
       pulled += 1;
     }
 
+    // --- Bảng xếp hạng (chỉ khi user bật tham gia) ---
+    if (localSettings.boardOptIn) {
+      const { error } = await sb.from("leaderboard").upsert({
+        user_id: uid,
+        display_name: (localSettings.displayName ?? "").trim() || "Học viên ẩn danh",
+        xp: localSettings.xp,
+        streak: localSettings.streak.current,
+        updated_at: at,
+      });
+      if (error) throw new Error(error.message);
+    }
+
     try {
       localStorage.setItem("lexiloop-last-sync", String(at));
     } catch {

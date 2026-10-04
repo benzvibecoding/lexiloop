@@ -1,5 +1,6 @@
 import "fake-indexeddb/auto";
 import { describe, expect, it, beforeEach } from "vitest";
+import Dexie from "dexie";
 import { LexiLoopDB } from "@/lib/db/client";
 import {
   bulkCreateCards,
@@ -62,5 +63,20 @@ describe("qa: repositories edge cases", () => {
     const loaded = await loadSettings(db);
     expect(await db.settings.count()).toBe(1);
     expect(loaded.newPerDay).toBe(s.newPerDay);
+  });
+
+  it("migrates v1 settings to v2 defaults", async () => {
+    const name = `mig-${Date.now()}`;
+    // Giả lập DB v1: settings chưa có dailyGoalReviews/boardOptIn
+    const v1 = new Dexie(name);
+    v1.version(1).stores({ settings: "id" });
+    await v1.table("settings").add({ id: "main", onboardingDone: true, newPerDay: 5, updatedAt: 1 });
+    v1.close();
+    const db = new LexiLoopDB(name);
+    const s = await db.settings.get("main");
+    expect(s?.dailyGoalReviews).toBe(20);
+    expect(s?.boardOptIn).toBe(false);
+    expect(s?.newPerDay).toBe(5);
+    db.close();
   });
 });

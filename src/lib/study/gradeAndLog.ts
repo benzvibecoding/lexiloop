@@ -4,6 +4,7 @@ import { gradeFsrs } from "@/lib/srs/adapter";
 import { cardSchema } from "@/lib/db/schemas";
 import { dayKey } from "@/lib/clock/clock";
 import { updateStreak } from "@/lib/gamification/streak";
+import { trackOncePerDay } from "@/lib/analytics";
 import type { Card, Rating, StudyMode } from "@/types/entities";
 
 export type GradeOutcome = {
@@ -75,5 +76,6 @@ export async function gradeCardInDb(
     const { streak } = updateStreak(settings.streak, dayKey(at, settings.dayRolloverHour));
     if (streak !== settings.streak) await saveSettings(db, { streak });
   }
+  trackOncePerDay("review_day");
   return { updated, logId: log.id, xpGained: gained };
 }

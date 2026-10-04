@@ -156,7 +156,14 @@ export async function bumpDailyStat(
 // ---- Settings ----
 export async function loadSettings(db: LexiLoopDB): Promise<AppSettings> {
   const cur = await db.settings.get("main");
-  if (cur) return cur;
+  if (cur) {
+    let next = cur;
+    if (cur.dailyGoalReviews == null || cur.boardOptIn == null) {
+      next = { ...cur, dailyGoalReviews: cur.dailyGoalReviews ?? 20, boardOptIn: cur.boardOptIn ?? false };
+      await db.settings.put(next);
+    }
+    return next;
+  }
   const d = defaultSettings();
   await db.settings.add(d);
   return d;
@@ -165,7 +172,8 @@ export async function loadSettings(db: LexiLoopDB): Promise<AppSettings> {
 /** Đọc settings không ghi (dùng trong liveQuery — cấm transaction ghi ở đó). */
 export async function peekSettings(db: LexiLoopDB): Promise<AppSettings> {
   const cur = await db.settings.get("main");
-  return cur ?? defaultSettings();
+  if (cur) return { ...cur, dailyGoalReviews: cur.dailyGoalReviews ?? 20, boardOptIn: cur.boardOptIn ?? false };
+  return defaultSettings();
 }
 
 export async function saveSettings(db: LexiLoopDB, patch: Partial<AppSettings>): Promise<AppSettings> {

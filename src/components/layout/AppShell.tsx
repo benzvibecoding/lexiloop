@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpenText, LayoutDashboard, Layers, Search, PlusCircle, BarChart3, Settings, BookMarked } from "lucide-react";
+import { BookOpenText, LayoutDashboard, Layers, Search, PlusCircle, BarChart3, Settings, BookMarked, Trophy, ShieldCheck } from "lucide-react";
+import { useIsAdmin } from "@/components/common/Analytics";
 import { site } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -19,11 +20,14 @@ const side = [
   { href: "/lookup", label: "Tra từ", icon: BookMarked },
   { href: "/add", label: "Thêm thẻ", icon: PlusCircle },
   { href: "/stats", label: "Thống kê", icon: BarChart3 },
+  { href: "/leaderboard", label: "Xếp hạng", icon: Trophy },
   { href: "/settings", label: "Cài đặt", icon: Settings },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const isAdmin = useIsAdmin();
+  const links = isAdmin ? [...side, { href: "/admin", label: "Quản trị", icon: ShieldCheck }] : side;
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-6xl">
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-1 border-r border-stone-200 p-4 md:flex dark:border-stone-800">
@@ -31,7 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span aria-hidden className="text-2xl">🔁</span>
           <span className="font-extrabold">{site.name}</span>
         </Link>
-        {side.map(({ href, label, icon: Icon }) => (
+        {links.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}

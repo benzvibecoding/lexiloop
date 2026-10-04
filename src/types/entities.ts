@@ -131,6 +131,7 @@ export interface AppSettings {
   onboardingDone: boolean;
   newPerDay: number;
   reviewPerDay: number;
+  dailyGoalReviews: number;
   desiredRetention: number;
   learningStepsMin: number[];
   relearningStepsMin: number[];
@@ -141,6 +142,8 @@ export interface AppSettings {
   ttsAutoplay: boolean;
   defaultMode: StudyMode;
   frontSide: "word" | "meaning" | "audio" | "cloze";
+  displayName?: string;
+  boardOptIn: boolean;
   xp: number;
   level: number;
   streak: StreakState;

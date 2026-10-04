@@ -1,18 +1,43 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Flame, Play, Snowflake, Trophy } from "lucide-react";
 import { getDb } from "@/lib/db/client";
 import { peekSettings } from "@/lib/db/repositories";
 import { buildQueue } from "@/lib/srs/queue";
 import { dayKey } from "@/lib/clock/clock";
-import { dailyGoalReviews } from "@/lib/gamification/streak";
 import { BADGES, DAILY_QUESTS, evaluateBadges } from "@/lib/gamification/badges";
 import { wordOfDay } from "@/lib/stats/compute";
 import { speak } from "@/lib/tts/speak";
+import { isSyncConfigured, syncAdapter } from "@/lib/sync/supabase";
 import { useDbMounted, useInitSettings } from "@/stores/settings";
 import { useGamePrefs } from "@/stores/game";
+
+/** Nhắc học khi hôm nay chưa ôn + gợi đăng nhập giữ chuỗi (guest). */
+function LoginHint({ studiedToday }: { studiedToday: boolean }) {
+  const [userId, setUserId] = useState<string | null | undefined>(() => (isSyncConfigured() ? undefined : null));
+  useEffect(() => {
+    if (!isSyncConfigured()) return;
+    void syncAdapter.getUserId().then(setUserId);
+  }, []);
+  if (userId === undefined) return null;
+  return (
+    <div className="mt-3 grid gap-2">
+      {!studiedToday ? (
+        <Link href="/review" className="flex min-h-[48px] items-center justify-center rounded-2xl bg-amber-300 px-4 text-sm font-bold text-stone-900">
+          ⏰ Hôm nay chưa ôn thẻ nào — học ngay kẻo mất chuỗi!
+        </Link>
+      ) : null}
+      {userId ? null : (
+        <Link href={isSyncConfigured() ? "/settings" : "/leaderboard"} className="flex min-h-[48px] items-center justify-center rounded-2xl border px-4 text-sm font-bold">
+          🔒 Dùng ngay không cần tài khoản, nhưng đăng nhập mới giữ được chuỗi khi đổi máy →
+        </Link>
+      )}
+    </div>
+  );
+}
 
 function Ring({ value, max }: { value: number; max: number }) {
   const r = 34;
@@ -57,7 +82,7 @@ export default function DashboardPage() {
     const newCount = queue.filter((q) => q.kind === "new").length;
     const today = dayKey(now, settings.dayRolloverHour);
     const todayStat = stats.find((s) => s.date === today);
-    const goal = dailyGoalReviews(settings.newPerDay);
+    const goal = settings.dailyGoalReviews;
     const lastLog = logs[0];
     const lastDeck = aliveDecks.find((d) => d.id === lastLog?.deckId) ?? null;
     const wod = wordOfDay(aliveCards, today);
@@ -77,6 +102,7 @@ export default function DashboardPage() {
   return (
     <div>
       <h1 className="text-2xl font-extrabold">Hôm nay bạn học gì? 🔥{data.settings.streak.current}</h1>
+      <LoginHint studiedToday={(data.todayStat?.reviews ?? 0) > 0} />
       {!data.settings.onboardingDone ? (
         <Link href="/onboarding" className="mt-3 flex min-h-[52px] items-center justify-center rounded-2xl bg-amber-300 px-4 font-bold text-stone-900">
           👋 Mới dùng? Hoàn tất onboarding 1 phút để được gợi ý deck →

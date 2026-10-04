@@ -47,6 +47,13 @@ pnpm icons       # Sinh lại icon PWA từ public/icons/icon.svg
 3. Thêm env lên Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` → Redeploy.
 4. Mở app → Cài đặt → đăng nhập → “Sync ngay”. Thiếu env thì mục này tự ẩn, app chạy guest.
 
+## Tài khoản admin (tùy chọn)
+
+1. Đăng nhập app 1 lần bằng tài khoản của mày.
+2. Supabase → Authentication → Users → copy User UID của mày.
+3. SQL Editor chạy: `insert into admins (user_id, added_at) values ('<UID>', extract(epoch from now()) * 1000);`
+4. Mở `/admin` sẽ thấy: tổng deck/thẻ/lượt ôn, biểu đồ xem + đăng ký 14 ngày, trang được xem nhiều. Tài khoản khác không thấy mục này.
+
 ## Cài PWA
 
 Mở app trên điện thoại → menu trình duyệt → “Add to Home Screen / Cài đặt ứng dụng”.

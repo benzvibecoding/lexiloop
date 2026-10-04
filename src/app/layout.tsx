@@ -4,7 +4,9 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { RegisterSw } from "@/components/common/RegisterSw";
 import { Toasts } from "@/components/common/Toasts";
+import { AnalyticsTracker } from "@/components/common/Analytics";
 import { AutoSync } from "@/components/settings/SyncPanel";
+import { Suspense } from "react";
 import { site } from "@/config/site";
 
 const beVietnam = Be_Vietnam_Pro({
@@ -46,6 +48,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${beVietnam.variable} ${notoSans.variable} min-h-dvh antialiased`}>
         <Providers>{children}</Providers>
         <Toasts />
+        <Suspense>
+          <AnalyticsTracker />
+        </Suspense>
         <AutoSync />
         <RegisterSw />
       </body>

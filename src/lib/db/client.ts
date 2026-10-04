@@ -3,7 +3,7 @@ import type { Card, DailyStat, Deck, DictCache, AppSettings, ReviewLog } from "@
 import type { MediaRecord } from "@/types/entities";
 
 export const DB_NAME = "lexiloop";
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export class LexiLoopDB extends Dexie {
   decks!: Table<Deck, string>;
@@ -16,7 +16,7 @@ export class LexiLoopDB extends Dexie {
 
   constructor(name = DB_NAME) {
     super(name);
-    this.version(DB_VERSION).stores({
+    this.version(1).stores({
       decks: "id, updatedAt, *tags",
       cards: "id, deckId, due, state, word, [deckId+state], [deckId+due], *tags",
       reviewLogs: "id, cardId, deckId, reviewedAt",
@@ -25,6 +25,26 @@ export class LexiLoopDB extends Dexie {
       dictCache: "word",
       settings: "id",
     });
+    // v2: thêm dailyGoalReviews cho settings (không đổi index)
+    this.version(2)
+      .stores({
+        decks: "id, updatedAt, *tags",
+        cards: "id, deckId, due, state, word, [deckId+state], [deckId+due], *tags",
+        reviewLogs: "id, cardId, deckId, reviewedAt",
+        dailyStats: "date",
+        media: "id",
+        dictCache: "word",
+        settings: "id",
+      })
+      .upgrade((tx) =>
+        tx
+          .table("settings")
+          .toCollection()
+          .modify((s: Record<string, unknown>) => {
+            if (s["dailyGoalReviews"] == null) s["dailyGoalReviews"] = 20;
+            if (s["boardOptIn"] == null) s["boardOptIn"] = false;
+          }),
+      );
   }
 }
 
@@ -45,6 +65,7 @@ export function defaultSettings(now = Date.now()): AppSettings {
     onboardingDone: false,
     newPerDay: 10,
     reviewPerDay: 200,
+    dailyGoalReviews: 20,
     desiredRetention: 0.9,
     learningStepsMin: [1, 10],
     relearningStepsMin: [10],
@@ -54,6 +75,7 @@ export function defaultSettings(now = Date.now()): AppSettings {
     ttsAutoplay: true,
     defaultMode: "flashcard",
     frontSide: "word",
+    boardOptIn: false,
     xp: 0,
     level: 1,
     streak: { current: 0, best: 0, freezes: 0, lastStudyDate: null },
